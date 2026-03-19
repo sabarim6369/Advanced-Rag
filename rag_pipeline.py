@@ -265,6 +265,7 @@ class RAGPipeline:
             "security_analysis": security_analysis,
             "response_validation": response_validation,
             "retrieval_stats": retrieval_result.get("retrieval_stats", {}),
+            "debug_chunks": [{"content": doc.page_content, "score": doc.metadata.get("final_score", 0)} for doc in retrieval_result.get("documents", [])],
             "processing_time": processing_time,
             "query_rewritten": should_retry and final_confidence != "low"
         }

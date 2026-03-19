@@ -18,7 +18,7 @@ class Config:
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
     
     # Groq Configuration
-    GROQ_MODEL = "llama3-8b-8192"
+    GROQ_MODEL = "llama-3.1-8b-instant"
     GROQ_BASE_URL = "https://api.groq.com/openai/v1"
     
     # Embedding Configuration

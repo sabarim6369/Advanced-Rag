@@ -322,9 +322,24 @@ def display_chat_interface():
                             <strong>Source {source.get("doc_id", i+1)}:</strong><br>
                             <em>{source.get("source", "Unknown")}</em><br>
                             <small>Score: {source.get("score", 0):.3f}</small><br>
+                            <strong>Content Preview:</strong><br>
                             {source.get("content", "")}
                         </div>
                         ''', unsafe_allow_html=True)
+                    
+                    # Debug: Show retrieval stats
+                    if message.get("retrieval_stats"):
+                        st.markdown("### 🔍 Retrieval Debug Info")
+                        stats = message["retrieval_stats"]
+                        st.json(stats)
+                        
+                        # Show top retrieved chunks for debugging
+                        if message.get("debug_chunks"):
+                            st.markdown("### 📄 Retrieved Chunks (Debug)")
+                            for i, chunk in enumerate(message["debug_chunks"][:3]):  # Show top 3
+                                st.markdown(f"**Chunk {i+1}** (Score: {chunk.get('score', 0):.3f})")
+                                st.markdown(f"```\n{chunk.get('content', '')[:500]}...\n```")
+                                st.markdown("---")
             
             # Display confidence if available
             if message.get("confidence"):
@@ -385,6 +400,8 @@ def process_query(query: str, use_adaptive: bool):
                 "confidence": result.get("confidence_data"),
                 "processing_time": result.get("processing_time", 0),
                 "query_rewritten": result.get("query_rewritten", False),
+                "retrieval_stats": result.get("retrieval_stats", {}),
+                "debug_chunks": result.get("debug_chunks", []),
                 "timestamp": datetime.now().isoformat()
             })
             
