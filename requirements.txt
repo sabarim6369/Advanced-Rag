@@ -8,3 +8,4 @@ groq
 streamlit
 python-dotenv
 langchain-text-splitters
+pypdf
