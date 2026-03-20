@@ -11,7 +11,7 @@ from memory.chat_memory import ChatMemory
 memory = ChatMemory()
 
 # load + build (run once)
-docs = load_documents("company.pdf")
+docs = load_documents("technova_confidential.pdf")
 chunks = split_documents(docs)
 
 store = VectorStore()
