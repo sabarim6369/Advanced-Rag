@@ -1,4 +1,4 @@
-from ingestion.loader import load_documents
+from ingestion.loader import load_multiple_documents
 from ingestion.chunker import split_documents
 from ingestion.vector_store import VectorStore
 from retrieval.hybrid_retriever import HybridRetriever
@@ -9,29 +9,51 @@ from llm.guardrails import check_query
 from memory.chat_memory import ChatMemory
 
 memory = ChatMemory()
+retriever = None
 
-# load + build (run once)
-docs = load_documents("technova_confidential.pdf")
-chunks = split_documents(docs)
 
-store = VectorStore()
-store.build(chunks)
+def build_knowledge_base(file_paths):
+    global memory, retriever
 
-retriever = HybridRetriever(chunks)
+    documents = load_multiple_documents(file_paths)
+    chunks = split_documents(documents)
+
+    store = VectorStore()
+    store.build(chunks)
+
+    retriever = HybridRetriever(chunks, store=store)
+    memory = ChatMemory()
+
+    return len(documents), len(chunks)
+
 
 def chat(query):
-    if not check_query(query):
-        return "Blocked due to security policy"
+    if retriever is None:
+        return "Upload and process at least one PDF before asking a question."
 
     docs = retriever.search(query)
     docs = rerank(query, docs)
 
-    context = "\n".join([d.page_content for d in docs])
+    if is_relevant(docs):
+        # 🔥 RAG FLOW
+        context = "\n".join([d.page_content for d in docs])
+        prompt = build_prompt(query, context, memory.get())
+    else:
+        # 🔥 NORMAL LLM FLOW
+        prompt = f"""
+You are a helpful AI assistant.
 
-    prompt = build_prompt(query, context, memory.get())
+Answer the question normally.
+
+Question:
+{query}
+"""
 
     response = generate_response(prompt)
 
     memory.add(query, response)
 
     return response
+def is_relevant(docs):
+    # simple check (can improve later)
+    return len(docs) > 0 and any(len(doc.page_content.strip()) > 20 for doc in docs)

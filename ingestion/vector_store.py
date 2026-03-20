@@ -26,4 +26,6 @@ class VectorStore:
     def search(self, query, k=5):
         query_vec = embed_text([query])
         distances, indices = self.index.search(query_vec, k)
+        if distances[0][0] > 1.5:
+            return []  # not relevant
         return [self.docs[i] for i in indices[0]]

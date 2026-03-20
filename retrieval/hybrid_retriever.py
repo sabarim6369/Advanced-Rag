@@ -2,8 +2,8 @@ from retrieval.vector_retriever import VectorRetriever
 from retrieval.keyword_retriever import KeywordRetriever
 
 class HybridRetriever:
-    def __init__(self, documents):
-        self.vector = VectorRetriever()
+    def __init__(self, documents, store=None):
+        self.vector = VectorRetriever(store=store)
         self.keyword = KeywordRetriever(documents)
 
     def search(self, query):
