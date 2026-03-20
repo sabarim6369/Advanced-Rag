@@ -31,19 +31,25 @@ def chat(query):
     if retriever is None:
         return "Upload and process at least one PDF before asking a question."
 
+    if not check_query(query):
+        return "Blocked due to security policy"
+
     docs = retriever.search(query)
     docs = rerank(query, docs)
 
     if is_relevant(docs):
-        # 🔥 RAG FLOW
-        context = "\n".join([d.page_content for d in docs])
+        context = "\n".join([doc.page_content for doc in docs])
         prompt = build_prompt(query, context, memory.get())
     else:
-        # 🔥 NORMAL LLM FLOW
         prompt = f"""
 You are a helpful AI assistant.
 
-Answer the question normally.
+The uploaded documents do not contain relevant information for this question.
+Answer using your general knowledge.
+Say briefly that this answer is not based on the uploaded documents.
+
+Chat History:
+{memory.get()}
 
 Question:
 {query}
@@ -54,6 +60,7 @@ Question:
     memory.add(query, response)
 
     return response
+
+
 def is_relevant(docs):
-    # simple check (can improve later)
     return len(docs) > 0 and any(len(doc.page_content.strip()) > 20 for doc in docs)
