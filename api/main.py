@@ -12,6 +12,18 @@ memory = ChatMemory()
 retriever = None
 
 
+def initialize_knowledge_base():
+    global retriever
+
+    store = VectorStore()
+    if not store.exists():
+        return False
+
+    store.load()
+    retriever = HybridRetriever(store.docs, store=store)
+    return True
+
+
 def build_knowledge_base(file_paths):
     global memory, retriever
 
@@ -64,3 +76,6 @@ Question:
 
 def is_relevant(docs):
     return len(docs) > 0 and any(len(doc.page_content.strip()) > 20 for doc in docs)
+
+
+initialize_knowledge_base()

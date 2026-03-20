@@ -2,7 +2,7 @@ from pathlib import Path
 
 import streamlit as st
 
-from api.main import build_knowledge_base, chat
+from api.main import build_knowledge_base, chat, initialize_knowledge_base
 
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -14,7 +14,7 @@ st.title("Company Assistant (Advanced RAG)")
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "knowledge_base_ready" not in st.session_state:
-    st.session_state.knowledge_base_ready = False
+    st.session_state.knowledge_base_ready = initialize_knowledge_base()
 
 st.subheader("Upload PDFs")
 uploaded_files = st.file_uploader(
@@ -25,7 +25,10 @@ uploaded_files = st.file_uploader(
 
 if st.button("Process Files"):
     if not uploaded_files:
-        st.warning("Please upload at least one PDF.")
+        if st.session_state.knowledge_base_ready:
+            st.info("Existing knowledge base is already loaded. Upload new files only if you want to replace it.")
+        else:
+            st.warning("Please upload at least one PDF.")
     else:
         saved_paths = []
         for uploaded_file in uploaded_files:
